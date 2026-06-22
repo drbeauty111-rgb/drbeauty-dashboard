@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>醫美時尚團隊進度儀表板</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232734;
+    --border: #2e3348;
+    --text: #e2e4ed;
+    --text2: #9499b5;
+    --accent: #6c8cff;
+    --accent2: #4a6cf7;
+    --green: #34d399;
+    --green-bg: rgba(52, 211, 153, 0.12);
+    --yellow: #fbbf24;
+    --yellow-bg: rgba(251, 191, 36, 0.12);
+    --red: #f87171;
+    --red-bg: rgba(248, 113, 113, 0.12);
+    --blue: #60a5fa;
+    --blue-bg: rgba(96, 165, 250, 0.12);
+    --gray: #6b7280;
+    --gray-bg: rgba(107, 114, 128, 0.12);
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .header h1 span { color: var(--accent); }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .header-right .updated { color: var(--text2); }
+  .header-right .refresh-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .header-right .refresh-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* ── Stats ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .stat-card .label {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .stat-card.total .num { color: var(--accent); }
+  .stat-card.pending .num { color: var(--yellow); }
+  .stat-card.doing .num { color: var(--blue); }
+  .stat-card.done .num { color: var(--green); }
+  .stat-card.paused .num { color: var(--gray); }
+
+  /* ── 每人完成率 ── */
+  .owner-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .owner-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    flex: 1;
+    min-width: 150px;
+  }
+  .owner-stat .name { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+  .owner-stat .bar-wrap {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .owner-stat .bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+  .owner-stat .detail { font-size: 12px; color: var(--text2); }
+
+  /* ── Filters ── */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .filters label {
+    font-size: 13px;
+    color: var(--text2);
+    margin-right: 4px;
+  }
+  .filters select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    min-width: 80px;
+  }
+  .filters select:focus { outline: none; border-color: var(--accent); }
+  .filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--accent2);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .filter-tag .close { cursor: pointer; font-size: 14px; opacity: 0.7; }
+  .filter-tag .close:hover { opacity: 1; }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Add Button ── */
+  .add-btn {
+    background: var(--accent2);
+    border: none;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-left: auto;
+  }
+  .add-btn:hover { background: var(--accent); transform: translateY(-1px); }
+
+  /* ── Task Grid ── */
+  .task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .task-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+    transform: translateY(-2px);
+  }
+  .task-card .badge-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .badge.status-待辦 { background: var(--yellow-bg); color: var(--yellow); }
+  .badge.status-進行中 { background: var(--blue-bg); color: var(--blue); }
+  .badge.status-已完成 { background: var(--green-bg); color: var(--green); }
+  .badge.status-暫停 { background: var(--gray-bg); color: var(--gray); }
+  .badge.pri-高 { background: var(--red-bg); color: var(--red); }
+  .badge.pri-中 { background: var(--yellow-bg); color: var(--yellow); }
+  .badge.pri-低 { background: var(--blue-bg); color: var(--blue); }
+  .badge.type { background: var(--surface2); color: var(--text2); }
+  .badge.owner {
+    background: rgba(108, 140, 255, 0.15);
+    color: var(--accent);
+  }
+
+  .task-card .name {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .task-card .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+  .task-card .meta span { display: flex; align-items: center; gap: 4px; }
+  .task-card .note {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    line-height: 1.4;
+  }
+  .task-card .del-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--gray);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s;
+  }
+  .task-card:hover .del-btn { opacity: 0.6; }
+  .task-card .del-btn:hover { background: var(--red-bg); color: var(--red); opacity: 1; }
+
+  /* ── Empty State ── */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text2);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    width: 520px;
+    max-width: 92vw;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-row {
+    margin-bottom: 14px;
+  }
+  .form-row label {
+    display: block;
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .form-row textarea {
+    min-height: 60px;
+    resize: vertical;
+  }
+  .form-row-inline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .modal-actions button {
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .modal-actions .btn-cancel {
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .modal-actions .btn-cancel:hover { background: var(--border); }
+  .modal-actions .btn-save {
+    background: var(--accent2);
+    color: #fff;
+  }
+  .modal-actions .btn-save:hover { background: var(--accent); }
+  .modal-actions .btn-danger {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid transparent;
+  }
+  .modal-actions .btn-danger:hover { border-color: var(--red); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    color: var(--text);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0;
+    transition: all 0.35s ease;
+    z-index: 2000;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .header h1 { font-size: 17px; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .task-grid { grid-template-columns: 1fr; }
+    .form-row-inline { grid-template-columns: 1fr; }
+    .filters { flex-direction: column; align-items: stretch; }
+    .filters .filter-group { flex: 1; }
+    .filters select { width: 100%; }
+    .add-btn { margin-left: 0; width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ Header ═══ -->
+<div class="header">
+  <h1>📋 醫美時尚 <span>團隊進度</span></h1>
+  <div class="header-right">
+    <span class="updated" id="updatedLabel">—</span>
+    <button class="refresh-btn" onclick="loadTasks()">⟳ 重新整理</button>
+  </div>
+</div>
+
+<!-- ═══ GitHub Pages 唯讀提示 ═══ -->
+<div id="readOnlyBanner" style="display:none; background:var(--yellow-bg); color:var(--yellow); border:1px solid rgba(251,191,36,0.3); border-radius:var(--radius); padding:10px 16px; margin-bottom:16px; font-size:13px; align-items:center; gap:8px;">
+  <span>📖</span>
+  <span><strong>唯讀模式</strong> — 這是 GitHub Pages 靜態版本。編輯功能請在本機啟動 <code>dashboard_server.py</code></span>
+</div>
+
+<!-- ═══ Stats Row ═══ -->
+<div class="stats-row" id="statsRow"></div>
+
+<!-- ═══ 每人完成率 ═══ -->
+<div class="owner-stats" id="ownerStats"></div>
+
+<!-- ═══ Filters ═══ -->
+<div class="filters" id="filterBar">
+  <div class="filter-group">
+    <label>負責人</label>
+    <select id="filterOwner" onchange="applyFilters()">
+      <option value="">全部</option>
+      <option value="主編">主編</option>
+      <option value="設計">設計</option>
+      <option value="數位編輯">數位編輯</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>狀態</label>
+    <select id="filterStatus" onchange="applyFilters()">
+      <option value="">全部</option>
+      <option value="待辦">待辦</option>
+      <option value="進行中">進行中</option>
+      <option value="已完成">已完成</option>
+      <option value="暫停">暫停</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>專案類型</label>
+    <select id="filterType" onchange="applyFilters()">
+      <option value="">全部</option>
+      <option value="月刊">月刊</option>
+      <option value="臨時專案">臨時專案</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>排序</label>
+    <select id="filterSort" onchange="applyFilters()">
+      <option value="status">狀態優先</option>
+      <option value="deadline">截止日</option>
+      <option value="priority">優先級</option>
+      <option value="id">新增順序</option>
+    </select>
+  </div>
+  <button class="add-btn" onclick="openAddModal()">＋ 新增任務</button>
+</div>
+
+<!-- ═══ Task Grid ═══ -->
+<div class="task-grid" id="taskGrid"></div>
+
+<!-- ═══ Modal ═══ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">新增任務</h2>
+    <input type="hidden" id="editId" value="">
+
+    <div class="form-row">
+      <label>專案名稱 *</label>
+      <input type="text" id="formName" placeholder="例如：7月號主稿-大師會客室">
+    </div>
+
+    <div class="form-row-inline">
+      <div class="form-row">
+        <label>負責人</label>
+        <select id="formOwner">
+          <option value="主編">主編</option>
+          <option value="設計">設計</option>
+          <option value="數位編輯">數位編輯</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>狀態</label>
+        <select id="formStatus">
+          <option value="待辦">待辦</option>
+          <option value="進行中">進行中</option>
+          <option value="已完成">已完成</option>
+          <option value="暫停">暫停</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row-inline">
+      <div class="form-row">
+        <label>優先級</label>
+        <select id="formPriority">
+          <option value="高">高</option>
+          <option value="中" selected>中</option>
+          <option value="低">低</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>截止日</label>
+        <input type="date" id="formDeadline">
+      </div>
+    </div>
+
+    <div class="form-row-inline">
+      <div class="form-row">
+        <label>專案類型</label>
+        <select id="formType">
+          <option value="月刊">月刊</option>
+          <option value="臨時專案">臨時專案</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>關聯期數</label>
+        <input type="text" id="formIssue" placeholder="如 7月號">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>備註</label>
+      <textarea id="formNote" placeholder="其他說明…"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="saveTask()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Toast ═══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// 核心邏輯
+// ══════════════════════════════════════════════════════════
+
+let allTasks = [];
+let metaData = {};
+let isReadOnly = false;
+
+// 判斷是否在 GitHub Pages（靜態模式）
+const isGitHubPages = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+const STATUS_ORDER = { "待辦": 0, "進行中": 1, "已完成": 2, "暫停": 3 };
+const PRIORITY_ORDER = { "高": 0, "中": 1, "低": 2 };
+
+async function api(method, path, body) {
+  const base = isGitHubPages ? '' : 'http://localhost:8080';
+  const opts = { method, headers: { "Content-Type": "application/json" } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(base + path, opts);
+  return res.json();
+}
+
+async function loadTasks() {
+  if (isGitHubPages) {
+    // GitHub Pages: 載入靜態 data.json
+    try {
+      const res = await fetch('./data.json');
+      const data = await res.json();
+      if (data.success) {
+        metaData = data.metadata || {};
+        allTasks = data.tasks || [];
+        isReadOnly = true;
+        render();
+        document.querySelector('.add-btn').style.display = 'none';
+        document.getElementById('readOnlyBanner').style.display = 'flex';
+      }
+    } catch (e) {
+      showToast("⚠️ 無法載入 data.json");
+    }
+  } else {
+    // 本機模式：連 API
+    try {
+      const data = await api("GET", "/api/tasks");
+      if (data.success) {
+        metaData = data.metadata || {};
+        allTasks = data.tasks || [];
+        isReadOnly = false;
+        render();
+        document.querySelector('.add-btn').style.display = 'inline-block';
+        document.getElementById('readOnlyBanner').style.display = 'none';
+      }
+    } catch (e) {
+      showToast("⚠️ 無法連線到伺服器，請確認 dashboard_server.py 正在執行");
+    }
+  }
+}
+
+// ═══ Render ═══
+
+function render() {
+  renderStats();
+  renderOwnerStats();
+  applyFilters();
+  document.getElementById("updatedLabel").textContent =
+    metaData.updated ? "更新: " + metaData.updated : "—";
+}
+
+function renderStats() {
+  const total = allTasks.length;
+  const pending = allTasks.filter(t => t.status === "待辦").length;
+  const doing = allTasks.filter(t => t.status === "進行中").length;
+  const done = allTasks.filter(t => t.status === "已完成").length;
+  const paused = allTasks.filter(t => t.status === "暫停").length;
+
+  document.getElementById("statsRow").innerHTML = `
+    <div class="stat-card total"><div class="num">${total}</div><div class="label">總任務數</div></div>
+    <div class="stat-card pending"><div class="num">${pending}</div><div class="label">待辦</div></div>
+    <div class="stat-card doing"><div class="num">${doing}</div><div class="label">進行中</div></div>
+    <div class="stat-card done"><div class="num">${done}</div><div class="label">已完成</div></div>
+    <div class="stat-card paused"><div class="num">${paused}</div><div class="label">暫停</div></div>
+  `;
+}
+
+function renderOwnerStats() {
+  const owners = ["主編", "設計", "數位編輯"];
+  let html = "";
+  for (const o of owners) {
+    const owned = allTasks.filter(t => t.owner === o);
+    const done = owned.filter(t => t.status === "已完成").length;
+    const total = owned.length;
+    const rate = total > 0 ? Math.round(done / total * 100) : 0;
+    const color = rate >= 80 ? "#34d399" : rate >= 50 ? "#fbbf24" : "#f87171";
+    html += `
+      <div class="owner-stat">
+        <div class="name">${o}</div>
+        <div class="bar-wrap">
+          <div class="bar" style="width:${rate}%; background:${color};"></div>
+        </div>
+        <div class="detail">${done}/${total} 完成 (${rate}%)</div>
+      </div>`;
+  }
+  document.getElementById("ownerStats").innerHTML = html;
+}
+
+function applyFilters() {
+  const owner = document.getElementById("filterOwner").value;
+  const status = document.getElementById("filterStatus").value;
+  const type = document.getElementById("filterType").value;
+  const sort = document.getElementById("filterSort").value;
+
+  let filtered = [...allTasks];
+
+  if (owner) filtered = filtered.filter(t => t.owner === owner);
+  if (status) filtered = filtered.filter(t => t.status === status);
+  if (type) filtered = filtered.filter(t => t.type === type);
+
+  // 排序
+  filtered.sort((a, b) => {
+    switch (sort) {
+      case "deadline":
+        if (!a.deadline && !b.deadline) return a.id - b.id;
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return a.deadline.localeCompare(b.deadline);
+      case "priority":
+        const pa = PRIORITY_ORDER[a.priority] ?? 99;
+        const pb = PRIORITY_ORDER[b.priority] ?? 99;
+        if (pa !== pb) return pa - pb;
+        return STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+      case "id":
+        return a.id - b.id;
+      default: // status
+        const sa = STATUS_ORDER[a.status] ?? 99;
+        const sb = STATUS_ORDER[b.status] ?? 99;
+        if (sa !== sb) return sa - sb;
+        const ppa = PRIORITY_ORDER[a.priority] ?? 99;
+        const ppb = PRIORITY_ORDER[b.priority] ?? 99;
+        return ppa - ppb;
+    }
+  });
+
+  renderCards(filtered);
+}
+
+function renderCards(tasks) {
+  const grid = document.getElementById("taskGrid");
+
+  if (tasks.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>沒有符合條件的任務</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = tasks.map(t => {
+    const deadlineLabel = t.deadline || "未設定";
+    const issueLabel = t.issue || "—";
+
+    return `
+      <div class="task-card" ${isReadOnly ? '' : `onclick="openEditModal(${t.id})"`}>
+        ${isReadOnly ? '' : `<button class="del-btn" onclick="event.stopPropagation(); deleteTask(${t.id})" title="刪除">✕</button>`}
+        <div class="badge-row">
+          <span class="badge status-${t.status}">${t.status}</span>
+          <span class="badge pri-${t.priority}">${t.priority}</span>
+          <span class="badge type">${t.type}</span>
+          <span class="badge owner">${t.owner}</span>
+        </div>
+        <div class="name">${t.name}</div>
+        <div class="meta">
+          <span>📅 ${deadlineLabel}</span>
+          <span>📰 ${issueLabel}</span>
+        </div>
+        ${t.note ? `<div class="note">📝 ${t.note}</div>` : ""}
+      </div>`;
+  }).join("");
+}
+
+// ═══ Modal ═══
+
+function openAddModal() {
+  document.getElementById("modalTitle").textContent = "＋ 新增任務";
+  document.getElementById("editId").value = "";
+  document.getElementById("formName").value = "";
+  document.getElementById("formOwner").value = "主編";
+  document.getElementById("formStatus").value = "待辦";
+  document.getElementById("formPriority").value = "中";
+  document.getElementById("formDeadline").value = "";
+  document.getElementById("formType").value = "月刊";
+  document.getElementById("formIssue").value = "";
+  document.getElementById("formNote").value = "";
+  document.getElementById("modalOverlay").classList.add("show");
+}
+
+function openEditModal(id) {
+  const t = allTasks.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById("modalTitle").textContent = "✏️ 編輯任務";
+  document.getElementById("editId").value = id;
+  document.getElementById("formName").value = t.name;
+  document.getElementById("formOwner").value = t.owner;
+  document.getElementById("formStatus").value = t.status;
+  document.getElementById("formPriority").value = t.priority;
+  document.getElementById("formDeadline").value = t.deadline;
+  document.getElementById("formType").value = t.type;
+  document.getElementById("formIssue").value = t.issue;
+  document.getElementById("formNote").value = t.note;
+  document.getElementById("modalOverlay").classList.add("show");
+}
+
+function closeModal() {
+  document.getElementById("modalOverlay").classList.remove("show");
+}
+
+async function saveTask() {
+  const name = document.getElementById("formName").value.trim();
+  if (!name) {
+    showToast("⚠️ 請填寫專案名稱");
+    return;
+  }
+
+  const editId = document.getElementById("editId").value;
+  const data = {
+    name,
+    owner: document.getElementById("formOwner").value,
+    status: document.getElementById("formStatus").value,
+    priority: document.getElementById("formPriority").value,
+    deadline: document.getElementById("formDeadline").value,
+    type: document.getElementById("formType").value,
+    issue: document.getElementById("formIssue").value,
+    note: document.getElementById("formNote").value.trim()
+  };
+
+  try {
+    if (editId) {
+      await api("PUT", `/api/tasks/${editId}`, data);
+      showToast("✅ 任務已更新");
+    } else {
+      await api("POST", "/api/tasks", data);
+      showToast("✅ 任務已新增");
+    }
+    closeModal();
+    await loadTasks();
+  } catch (e) {
+    showToast("⚠️ 儲存失敗：" + e.message);
+  }
+}
+
+async function deleteTask(id) {
+  const t = allTasks.find(x => x.id === id);
+  if (!confirm(`確定刪除「${t.name}」？`)) return;
+  try {
+    await api("DELETE", `/api/tasks/${id}`);
+    showToast("🗑️ 任務已刪除");
+    await loadTasks();
+  } catch (e) {
+    showToast("⚠️ 刪除失敗：" + e.message);
+  }
+}
+
+// ═══ Toast ═══
+
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+// ═══ 鍵盤快捷鍵 ═══
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeModal();
+});
+
+// ═══ 載入 ═══
+loadTasks();
+
+// 每 30 秒自動刷新（可手動按重新整理）
+setInterval(loadTasks, 30000);
+</script>
+</body>
+</html>

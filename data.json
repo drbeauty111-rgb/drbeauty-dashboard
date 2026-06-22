@@ -1,0 +1,119 @@
+{
+  "success": true,
+  "metadata": {
+    "title": "醫美時尚團隊進度儀表板",
+    "updated": "2026-06-22"
+  },
+  "tasks": [
+    {
+      "id": 2,
+      "name": "7月號版面設計",
+      "owner": "設計",
+      "status": "待辦",
+      "priority": "高",
+      "deadline": "2026-07-05",
+      "type": "月刊",
+      "issue": "7月號",
+      "note": "等主稿完成"
+    },
+    {
+      "id": 5,
+      "name": "高德美廣編稿-皇家肉毒",
+      "owner": "主編",
+      "status": "待辦",
+      "priority": "高",
+      "deadline": "2026-06-30",
+      "type": "臨時專案",
+      "issue": "7月號",
+      "note": "等待客戶確認大綱"
+    },
+    {
+      "id": 3,
+      "name": "7月號社群貼文排程",
+      "owner": "數位編輯",
+      "status": "待辦",
+      "priority": "中",
+      "deadline": "2026-07-10",
+      "type": "月刊",
+      "issue": "7月號",
+      "note": "需主稿完成後才能產出"
+    },
+    {
+      "id": 8,
+      "name": "Threads官方帳號內容規劃",
+      "owner": "主編",
+      "status": "待辦",
+      "priority": "低",
+      "deadline": "2026-07-15",
+      "type": "臨時專案",
+      "issue": "—",
+      "note": "新平台拓展"
+    },
+    {
+      "id": 1,
+      "name": "7月號主稿-大師會客室（男性醫美）",
+      "owner": "主編",
+      "status": "進行中",
+      "priority": "高",
+      "deadline": "2026-06-28",
+      "type": "月刊",
+      "issue": "7月號",
+      "note": "已定稿，準備轉docx"
+    },
+    {
+      "id": 6,
+      "name": "7月號封面設計",
+      "owner": "設計",
+      "status": "進行中",
+      "priority": "高",
+      "deadline": "2026-06-25",
+      "type": "月刊",
+      "issue": "7月號",
+      "note": "初稿已完成"
+    },
+    {
+      "id": 4,
+      "name": "FB粉專每日監測",
+      "owner": "數位編輯",
+      "status": "進行中",
+      "priority": "中",
+      "deadline": "2026-06-30",
+      "type": "月刊",
+      "issue": "7月號",
+      "note": "每日回報"
+    },
+    {
+      "id": 7,
+      "name": "社群監測週報",
+      "owner": "數位編輯",
+      "status": "進行中",
+      "priority": "中",
+      "deadline": "2026-06-23",
+      "type": "月刊",
+      "issue": "7月號",
+      "note": "每週三產出"
+    },
+    {
+      "id": 9,
+      "name": "競品分析-本月醫美品牌",
+      "owner": "數位編輯",
+      "status": "已完成",
+      "priority": "中",
+      "deadline": "2026-06-20",
+      "type": "月刊",
+      "issue": "7月號",
+      "note": "已繳交"
+    },
+    {
+      "id": 10,
+      "name": "8月號議題規劃",
+      "owner": "主編",
+      "status": "暫停",
+      "priority": "低",
+      "deadline": "2026-07-10",
+      "type": "月刊",
+      "issue": "8月號",
+      "note": "等7月號告一段落再開始"
+    }
+  ]
+}
